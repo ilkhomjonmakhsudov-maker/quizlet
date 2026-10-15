@@ -1,0 +1,144 @@
+[
+  {
+    "id": "mediasavodxonlik-1",
+    "title": "Mediasavodxonlik va axborot madaniyati (1–50-betlar)",
+    "questions": [
+      {
+        "text": "\"Media\" soʻzi lotin tilidan olingan boʻlib, qanday maʼnoni anglatadi?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "Xabar", "correct": false },
+          { "text": "Vositachi", "correct": true },
+          { "text": "Ommaviy", "correct": false },
+          { "text": "Maʼlumot", "correct": false }
+        ]
+      },
+      {
+        "text": "\"Axborot savodxonligi\" (Information literacy) iborasini 1974-yilda birinchi boʻlib kim qoʻllagan?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "Norbert Viner", "correct": false },
+          { "text": "Elvin Toffler", "correct": false },
+          { "text": "Pol Zurkovskiy", "correct": true },
+          { "text": "Klod Shennon", "correct": false }
+        ]
+      },
+      {
+        "text": "Kibernetika fanining asoschisi kim?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "Norbert Viner", "correct": true },
+          { "text": "Alan Tyuring", "correct": false },
+          { "text": "R. Xartli", "correct": false },
+          { "text": "A. P. Ershov", "correct": false }
+        ]
+      },
+      {
+        "text": "Dunyodagi birinchi bosma gazeta qayerda chiqa boshlagan?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "Germaniyada", "correct": false },
+          { "text": "Angliyada", "correct": false },
+          { "text": "Rimda", "correct": false },
+          { "text": "Xitoyda", "correct": true }
+        ]
+      },
+      {
+        "text": "M. Behbudiy \"Samarqand\" gazetasini qaysi yili chiqara boshlagan?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "1905-yil", "correct": false },
+          { "text": "1913-yil", "correct": true },
+          { "text": "1924-yil", "correct": false },
+          { "text": "1932-yil", "correct": false }
+        ]
+      },
+      {
+        "text": "\"Axborot olish kafolatlari va erkinligi toʻgʻrisida\"gi Qonun qachon qabul qilingan?",
+        "time": 30,
+        "image": "",
+        "options": [
+          { "text": "1991-yil 31-avgust", "correct": false },
+          { "text": "1997-yil 24-aprel", "correct": true },
+          { "text": "2003-yil 11-dekabr", "correct": false },
+          { "text": "2019-yil 8-oktabr", "correct": false }
+        ]
+      },
+      {
+        "text": "Mediataʼlim boʻyicha Gryunvald deklaratsiyasi qaysi yili qabul qilingan?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "1974-yil", "correct": false },
+          { "text": "1982-yil", "correct": true },
+          { "text": "2005-yil", "correct": false },
+          { "text": "2007-yil", "correct": false }
+        ]
+      },
+      {
+        "text": "Ensiklopediyalar, bibliografiyalar va maʼlumotnomalar qaysi turdagi axborot manbalariga kiradi?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "Birlamchi manbalar", "correct": false },
+          { "text": "Ikkilamchi manbalar", "correct": false },
+          { "text": "Uchlamchi manbalar", "correct": true },
+          { "text": "Noanʼanaviy manbalar", "correct": false }
+        ]
+      },
+      {
+        "text": "\"Uchinchi toʻlqin\" asarining muallifi kim?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "E. Toffler", "correct": true },
+          { "text": "Y. Ocheret", "correct": false },
+          { "text": "A. Umarov", "correct": false },
+          { "text": "Mia Dornert", "correct": false }
+        ]
+      },
+      {
+        "text": "Amerikalik nazariyotchilar ommaviy axborot vositalarini tavsiflovchi nechta nazariyani ajratib koʻrsatishadi?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "Ikkita", "correct": false },
+          { "text": "Uchta", "correct": false },
+          { "text": "Toʻrtta", "correct": true },
+          { "text": "Beshta", "correct": false }
+        ]
+      }
+    ]
+  },
+  {
+    "id": "sample",
+    "title": "Namuna test: Umumiy bilim",
+    "questions": [
+      {
+        "text": "Quyosh sistemasidagi eng katta sayyora qaysi?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "Yer", "correct": false },
+          { "text": "Yupiter", "correct": true },
+          { "text": "Saturn", "correct": false },
+          { "text": "Mars", "correct": false }
+        ]
+      },
+      {
+        "text": "Dengiz sathida suv 100 °C da qaynaydi.",
+        "time": 10,
+        "image": "",
+        "options": [
+          { "text": "Toʻgʻri", "correct": true },
+          { "text": "Notoʻgʻri", "correct": false }
+        ]
+      }
+    ]
+  }
+]

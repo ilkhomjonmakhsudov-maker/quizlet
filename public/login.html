@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ClassQuiz – Kirish</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body { min-height: 100vh; display: grid; place-items: center; padding: 16px; }
+    form { width: 100%; max-width: 360px; display: grid; gap: 12px; }
+    h1 { color: #fff; text-align: center; margin: 0 0 4px; }
+    p { color: #fff; opacity: 0.85; text-align: center; margin: 0 0 8px; }
+    input { text-align: center; font-size: 1.2rem; padding: 14px; }
+    .btn { font-size: 1.2rem; padding: 14px; background: var(--ink); }
+    .error { background: rgba(0, 0, 0, 0.35); color: #fff; padding: 10px; border-radius: 8px; text-align: center; }
+  </style>
+</head>
+<body>
+  <form id="login">
+    <h1>ClassQuiz</h1>
+    <p>Oʻqituvchi paneliga kirish</p>
+    <div class="error hidden" id="error"></div>
+    <input type="password" id="password" placeholder="Parol" autocomplete="current-password" autofocus>
+    <button class="btn" type="submit">Kirish</button>
+  </form>
+  <script>
+    document.getElementById('login').onsubmit = async (e) => {
+      e.preventDefault();
+      const error = document.getElementById('error');
+      error.classList.add('hidden');
+      const res = await fetch('/api/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ password: document.getElementById('password').value }),
+      });
+      if (res.ok) return location.replace('/');
+      error.textContent = (await res.json()).error || 'Xatolik yuz berdi.';
+      error.classList.remove('hidden');
+    };
+  </script>
+</body>
+</html>

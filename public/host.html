@@ -1,0 +1,370 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ClassQuiz – Oʻyin</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body { color: #fff; min-height: 100vh; display: flex; flex-direction: column; }
+    .topbar {
+      display: flex; align-items: center; justify-content: space-between; gap: 12px;
+      padding: 10px 20px; background: rgba(0, 0, 0, 0.2); font-weight: 600;
+    }
+    .topbar .pin-mini { font-size: 1.1rem; }
+    .topbar .pin-mini b { letter-spacing: 2px; }
+    .topbar .tools { display: flex; gap: 8px; }
+    #screen { flex: 1; display: flex; flex-direction: column; padding: 24px; gap: 20px; }
+
+    /* Lobby */
+    .lobby { display: grid; grid-template-columns: minmax(260px, 420px) 1fr; gap: 28px; align-items: start; }
+    .join-card { background: #fff; color: var(--ink); border-radius: 14px; padding: 24px; text-align: center; }
+    .join-card img { width: 100%; max-width: 340px; image-rendering: pixelated; }
+    .join-card .step { color: var(--muted); margin: 8px 0 0; }
+    .join-card .url { font-weight: 700; font-size: 1.15rem; word-break: break-all; }
+    .join-card .pin { font-size: 4rem; font-weight: 900; letter-spacing: 6px; line-height: 1.1; margin: 4px 0; }
+    .lobby-side h2 { margin: 0 0 6px; font-size: 2rem; }
+    .lobby-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; margin-bottom: 18px; }
+    .count-badge { background: rgba(0, 0, 0, 0.3); padding: 8px 16px; border-radius: 8px; font-size: 1.3rem; font-weight: 800; }
+    .names { display: flex; flex-wrap: wrap; gap: 10px; }
+    .name-chip {
+      background: #fff; color: var(--ink); border: 0; border-radius: 8px; padding: 10px 16px;
+      font-size: 1.15rem; font-weight: 700; animation: pop 0.25s ease-out;
+    }
+    .name-chip:hover { text-decoration: line-through; background: #ffe3e7; }
+    .name-chip.offline { opacity: 0.5; }
+    @keyframes pop { from { transform: scale(0.6); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    .waiting { opacity: 0.8; font-size: 1.2rem; margin-top: 30px; }
+
+    /* Question */
+    .q-progress { font-weight: 700; opacity: 0.85; }
+    .q-text {
+      background: #fff; color: var(--ink); border-radius: 12px; padding: 22px 28px;
+      font-size: clamp(1.5rem, 3.2vw, 2.6rem); font-weight: 800; text-align: center;
+    }
+    .q-middle { flex: 1; display: grid; grid-template-columns: 120px 1fr 120px; align-items: center; gap: 20px; min-height: 160px; }
+    .q-middle img { max-width: 100%; max-height: 38vh; border-radius: 10px; justify-self: center; background: #fff; }
+    .timer {
+      width: 110px; height: 110px; border-radius: 50%; background: var(--bg-dark);
+      display: grid; place-items: center; font-size: 2.8rem; font-weight: 900;
+    }
+    .stat { text-align: center; font-weight: 700; }
+    .stat b { display: block; font-size: 2.6rem; }
+    .answers { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+    .answer {
+      display: flex; align-items: center; gap: 14px; border-radius: 10px; padding: 20px 22px;
+      font-size: clamp(1.1rem, 2.2vw, 1.8rem); font-weight: 700; min-height: 90px;
+      box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+    }
+    .answer .shape { font-size: 1.6em; }
+    .answer .label { flex: 1; }
+    .answer .tick { font-size: 1.8em; }
+    .answer.wrong { opacity: 0.3; }
+
+    .ready { flex: 1; display: grid; place-items: center; text-align: center; }
+    .ready h1 { font-size: clamp(2rem, 5vw, 4rem); margin: 0 0 20px; }
+    .ready .big-count {
+      width: 160px; height: 160px; margin: 0 auto; border-radius: 50%; background: #fff; color: var(--accent);
+      display: grid; place-items: center; font-size: 5rem; font-weight: 900; animation: pop 0.4s;
+    }
+
+    /* Results chart */
+    .chart { display: flex; justify-content: center; align-items: flex-end; gap: 24px; height: 100%; min-height: 160px; }
+    .bar-col { display: flex; flex-direction: column; align-items: center; justify-content: flex-end; gap: 6px; width: 90px; height: 100%; }
+    .bar { width: 100%; border-radius: 6px 6px 0 0; min-height: 6px; transition: height 0.6s ease-out; }
+    .bar-col .num { font-size: 1.6rem; font-weight: 800; }
+    .bar-col.wrong { opacity: 0.35; }
+
+    /* Leaderboard */
+    .board { max-width: 760px; width: 100%; margin: 0 auto; display: grid; gap: 10px; }
+    .board h1 { text-align: center; font-size: 2.6rem; margin: 0 0 10px; }
+    .board-row {
+      display: flex; justify-content: space-between; align-items: center; background: #fff; color: var(--ink);
+      border-radius: 10px; padding: 16px 22px; font-size: 1.5rem; font-weight: 800;
+      animation: slide 0.4s ease-out both;
+    }
+    .board-row:first-of-type { background: #ffd34d; }
+    @keyframes slide { from { transform: translateX(-30px); opacity: 0; } to { transform: none; opacity: 1; } }
+
+    /* Final */
+    .podium { display: flex; justify-content: center; align-items: flex-end; gap: 16px; margin-top: 10px; }
+    .podium .place { display: flex; flex-direction: column; align-items: center; width: min(220px, 30vw); }
+    .podium .pname { font-size: 1.6rem; font-weight: 900; text-align: center; word-break: break-word; }
+    .podium .pscore { opacity: 0.85; font-weight: 700; margin-bottom: 8px; }
+    .podium .block {
+      width: 100%; background: var(--bg-dark); border-radius: 8px 8px 0 0; display: grid; place-items: center;
+      font-size: 3rem; font-weight: 900; animation: rise 0.8s ease-out both;
+    }
+    .podium .p1 .block { height: 220px; background: #d4a514; }
+    .podium .p2 .block { height: 160px; background: #9aa3b0; animation-delay: 0.3s; }
+    .podium .p3 .block { height: 110px; background: #b0703a; animation-delay: 0.6s; }
+    @keyframes rise { from { transform: scaleY(0); transform-origin: bottom; } to { transform: scaleY(1); transform-origin: bottom; } }
+    .results-table { background: #fff; color: var(--ink); border-radius: 12px; padding: 16px 20px; max-width: 760px; width: 100%; margin: 0 auto; }
+    .results-table table { width: 100%; border-collapse: collapse; }
+    .results-table th, .results-table td { text-align: left; padding: 8px 6px; border-bottom: 1px solid var(--line); }
+    .results-table td.n, .results-table th.n { text-align: right; }
+
+    .controls { display: flex; justify-content: flex-end; gap: 10px; flex-wrap: wrap; }
+    .controls.center { justify-content: center; }
+    .hint-key { opacity: 0.7; font-size: 0.85rem; align-self: center; }
+
+    @media (max-width: 800px) {
+      .lobby { grid-template-columns: 1fr; }
+      .answers { grid-template-columns: 1fr; }
+      .q-middle { grid-template-columns: 80px 1fr 80px; }
+      .timer { width: 72px; height: 72px; font-size: 1.8rem; }
+    }
+  </style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="pin-mini" id="pin-mini">Yuklanmoqda…</div>
+    <div class="tools">
+      <button class="btn light small" id="fullscreen">⛶ Toʻliq ekran</button>
+      <button class="btn light small" id="end-game">Oʻyinni tugatish</button>
+    </div>
+  </div>
+  <div id="screen"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/common.js"></script>
+  <script>
+    const socket = io();
+    const screen = document.getElementById('screen');
+    const quizId = new URLSearchParams(location.search).get('quiz');
+    const SESSION_KEY = 'classquiz-host';
+    let state = null;
+    let cleanups = [];
+
+    function resetTimers() {
+      cleanups.forEach((fn) => fn());
+      cleanups = [];
+    }
+
+    function saveSession(pin, hostKey) {
+      sessionStorage.setItem(SESSION_KEY, JSON.stringify({ quizId, pin, hostKey }));
+    }
+
+    function readSession() {
+      try { return JSON.parse(sessionStorage.getItem(SESSION_KEY)); } catch { return null; }
+    }
+
+    function createGame() {
+      socket.emit('host:create', { quizId }, (res) => {
+        if (res.error) {
+          screen.innerHTML = `<div class="ready"><div><h1>${esc(res.error)}</h1><a class="btn light" href="/">Bosh sahifaga qaytish</a></div></div>`;
+          return;
+        }
+        saveSession(res.pin, res.hostKey);
+      });
+    }
+
+    // Create a new game, or pick up the one this tab was already running
+    // (e.g. after a refresh or a Wi-Fi hiccup).
+    socket.on('connect', () => {
+      const saved = readSession();
+      if (saved && saved.quizId === quizId) {
+        socket.emit('host:resume', saved, (res) => { if (res.error) createGame(); });
+      } else {
+        createGame();
+      }
+    });
+
+    socket.on('host:state', (s) => { state = s; render(); });
+    socket.on('game:ended', () => {
+      sessionStorage.removeItem(SESSION_KEY);
+      location.href = '/';
+    });
+
+    const next = () => socket.emit('host:next', { from: state.phase });
+
+    document.addEventListener('keydown', (e) => {
+      if (e.repeat || e.target.closest('input, textarea, select, button, a')) return;
+      if ((e.key === ' ' || e.key === 'Enter' || e.key === 'ArrowRight') && state) {
+        if (state.phase === 'lobby' && !state.players.length) return;
+        if (state.phase === 'final') return;
+        e.preventDefault();
+        next();
+      }
+    });
+
+    document.getElementById('fullscreen').onclick = () => {
+      if (document.fullscreenElement) document.exitFullscreen();
+      else document.documentElement.requestFullscreen?.();
+    };
+
+    document.getElementById('end-game').onclick = () => {
+      if (!state || state.phase === 'final' || confirm('Oʻyin hamma uchun tugatilsinmi?')) socket.emit('host:end');
+    };
+
+    screen.addEventListener('click', (e) => {
+      const chip = e.target.closest('[data-kick]');
+      if (chip && confirm(`${chip.dataset.name} oʻyindan chiqarilsinmi?`)) {
+        socket.emit('host:kick', { playerId: chip.dataset.kick });
+      }
+      if (e.target.closest('[data-next]')) next();
+      if (e.target.closest('[data-csv]')) downloadCsv();
+    });
+
+    // ---------------- Rendering ----------------
+
+    function render() {
+      resetTimers();
+      const s = state;
+      document.getElementById('pin-mini').innerHTML = s.phase === 'lobby'
+        ? esc(s.quizTitle)
+        : `Qoʻshilish: <b>${esc(s.joinBase.replace(/^https?:\/\//, ''))}/play</b> · PIN <b>${s.pin}</b>`;
+      ({ lobby: renderLobby, question: renderQuestion, reveal: renderReveal,
+         leaderboard: renderLeaderboard, final: renderFinal })[s.phase]();
+    }
+
+    function renderLobby() {
+      const s = state;
+      screen.innerHTML = `
+        <div class="lobby">
+          <div class="join-card">
+            <img src="${s.qr}" alt="Qoʻshilish uchun QR kod">
+            <p class="step">QR kodni skanerlang yoki quyidagi manzilga kiring</p>
+            <div class="url">${esc(s.joinBase.replace(/^https?:\/\//, ''))}/play</div>
+            <p class="step">va oʻyin PIN kodini kiriting</p>
+            <div class="pin">${s.pin}</div>
+          </div>
+          <div class="lobby-side">
+            <div class="lobby-head">
+              <div>
+                <h2>${esc(s.quizTitle)}</h2>
+                <div style="opacity:.8">${s.total} ta savol</div>
+              </div>
+              <div style="display:flex; gap:12px; align-items:center;">
+                <span class="count-badge">👤 ${s.players.length}</span>
+                <button class="btn light big" data-next ${s.players.length ? '' : 'disabled'}>Boshlash ▶</button>
+              </div>
+            </div>
+            <div class="names">
+              ${s.players.map((p) => `<button class="name-chip ${p.connected ? '' : 'offline'}" data-kick="${p.id}" data-name="${esc(p.name)}" title="Chiqarish uchun bosing">${esc(p.name)}</button>`).join('')}
+            </div>
+            ${s.players.length ? '<p class="waiting">Oʻyinchini chiqarish uchun uning ismini bosing.</p>' : '<p class="waiting">Oʻquvchilar qoʻshilishi kutilmoqda…</p>'}
+          </div>
+        </div>`;
+    }
+
+    function answerTiles(question, reveal) {
+      return `<div class="answers">${question.options.map((o, i) => `
+        <div class="answer opt-${i} ${reveal && !o.correct ? 'wrong' : ''}">
+          <span class="shape">${SHAPES[i]}</span>
+          <span class="label">${esc(o.text)}</span>
+          ${reveal && o.correct ? '<span class="tick">✓</span>' : ''}
+        </div>`).join('')}</div>`;
+    }
+
+    function renderQuestion() {
+      const s = state;
+      const q = s.question;
+      if (s.readyMs > 0) {
+        screen.innerHTML = `
+          <div class="ready"><div>
+            <div class="q-progress">Savol ${s.qIndex + 1} / ${s.total}</div>
+            <h1>${esc(q.text)}</h1>
+            <div class="big-count" id="ready-count"></div>
+          </div></div>`;
+        cleanups.push(countdown(s.readyMs, (n) => {
+          const el = document.getElementById('ready-count');
+          if (el) el.textContent = Math.max(1, n);
+        }));
+        const t = setTimeout(() => { state = { ...s, readyMs: 0 }; render(); }, s.readyMs);
+        cleanups.push(() => clearTimeout(t));
+        return;
+      }
+      screen.innerHTML = `
+        <div class="q-progress">Savol ${s.qIndex + 1} / ${s.total}</div>
+        <div class="q-text">${esc(q.text)}</div>
+        <div class="q-middle">
+          <div class="timer" id="timer"></div>
+          <div style="display:grid">${q.image ? `<img src="${esc(q.image)}" alt="">` : ''}</div>
+          <div class="stat"><b>${s.answeredCount}</b>ta javob</div>
+        </div>
+        ${answerTiles(q, false)}
+        <div class="controls"><span class="hint-key">Probel = keyingi</span><button class="btn light" data-next>Oʻtkazib yuborish ▶</button></div>`;
+      cleanups.push(countdown(s.remainingMs, (n) => {
+        const el = document.getElementById('timer');
+        if (el) el.textContent = n;
+      }));
+    }
+
+    function renderReveal() {
+      const s = state;
+      const q = s.question;
+      const max = Math.max(1, ...s.counts);
+      screen.innerHTML = `
+        <div class="q-progress">Savol ${s.qIndex + 1} / ${s.total}</div>
+        <div class="q-text">${esc(q.text)}</div>
+        <div class="q-middle" style="grid-template-columns:1fr">
+          <div class="chart">
+            ${q.options.map((o, i) => `
+              <div class="bar-col ${o.correct ? '' : 'wrong'}">
+                <div class="num">${s.counts[i]}${o.correct ? ' ✓' : ''}</div>
+                <div class="bar opt-${i}" data-h="${(s.counts[i] / max) * 100}" style="height:0"></div>
+                <div class="shape" style="font-size:1.5rem">${SHAPES[i]}</div>
+              </div>`).join('')}
+          </div>
+        </div>
+        ${answerTiles(q, true)}
+        <div class="controls"><span class="hint-key">Probel = keyingi</span><button class="btn light big" data-next>Keyingi ▶</button></div>`;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        document.querySelectorAll('.bar').forEach((b) => { b.style.height = `calc(${b.dataset.h}% - 70px)`; });
+      }));
+    }
+
+    function renderLeaderboard() {
+      const s = state;
+      screen.innerHTML = `
+        <div class="board">
+          <h1>Reyting</h1>
+          ${s.players.slice(0, 5).map((p, i) => `
+            <div class="board-row" style="animation-delay:${i * 0.08}s">
+              <span>${i + 1}. ${esc(p.name)}</span><span>${p.score}</span>
+            </div>`).join('')}
+        </div>
+        <div class="controls"><span class="hint-key">Probel = keyingi</span><button class="btn light big" data-next>Keyingi savol ▶</button></div>`;
+    }
+
+    function renderFinal() {
+      const s = state;
+      const [first, second, third] = s.players;
+      const place = (p, n) => p ? `
+        <div class="place p${n}">
+          <div class="pname">${esc(p.name)}</div>
+          <div class="pscore">${p.score} ball</div>
+          <div class="block">${n}</div>
+        </div>` : '';
+      screen.innerHTML = `
+        <h1 class="center" style="margin:0; font-size:2.6rem">🏆 ${esc(s.quizTitle)}</h1>
+        <div class="podium">${place(second, 2)}${place(first, 1)}${place(third, 3)}</div>
+        <div class="results-table">
+          <table>
+            <thead><tr><th>#</th><th>Ism</th><th class="n">Toʻgʻri</th><th class="n">Ball</th></tr></thead>
+            <tbody>
+              ${s.players.map((p, i) => `<tr><td>${i + 1}</td><td>${esc(p.name)}</td><td class="n">${p.correctCount} / ${s.total}</td><td class="n">${p.score}</td></tr>`).join('')}
+            </tbody>
+          </table>
+        </div>
+        <div class="controls center">
+          <button class="btn light" data-csv>⬇ Natijalarni yuklab olish</button>
+          <a class="btn light" href="/" onclick="sessionStorage.removeItem('${SESSION_KEY}')">Bosh sahifaga qaytish</a>
+        </div>`;
+    }
+
+    function downloadCsv() {
+      const s = state;
+      const cell = (v) => `"${String(v).replace(/"/g, '""')}"`;
+      const rows = [['Oʻrin', 'Ism', 'Toʻgʻri', 'Savollar soni', 'Ball']]
+        .concat(s.players.map((p, i) => [i + 1, p.name, p.correctCount, s.total, p.score]));
+      const csv = rows.map((r) => r.map(cell).join(',')).join('\n');
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv' }));
+      a.download = `${s.quizTitle.replace(/[\\/:*?"<>|]+/g, '').trim() || 'test'} natijalar.csv`;
+      a.click();
+    }
+  </script>
+</body>
+</html>

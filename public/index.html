@@ -1,0 +1,325 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>ClassQuiz – Oʻqituvchi</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    body { background: #f3f1f8; }
+    header {
+      background: var(--bg);
+      color: #fff;
+      padding: 14px 24px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+    }
+    header h1 { margin: 0; font-size: 1.5rem; }
+    main { max-width: 900px; margin: 0 auto; padding: 24px 16px 80px; }
+    h2 { margin: 0 0 16px; }
+
+    .quiz-list { display: grid; gap: 12px; }
+    .quiz-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+    .quiz-row h3 { margin: 0 0 4px; font-size: 1.15rem; }
+    .quiz-row .actions { display: flex; gap: 8px; flex-wrap: wrap; }
+    .empty { text-align: center; padding: 40px 20px; }
+
+    .editor-top { display: flex; gap: 12px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 16px; }
+    .title-input { font-size: 1.3rem; font-weight: 700; }
+    .question { margin-top: 16px; }
+    .q-head { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-bottom: 10px; }
+    .q-head strong { font-size: 1.05rem; }
+    .q-tools { display: flex; gap: 6px; flex-wrap: wrap; }
+    .q-meta { display: grid; grid-template-columns: 1fr 140px; gap: 10px; margin-top: 10px; }
+    .options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .option { display: flex; align-items: center; gap: 8px; border-radius: 8px; padding: 6px 8px; color: #fff; }
+    .option .shape { font-size: 1.2rem; }
+    .option input[type="text"] { border-color: transparent; color: var(--ink); }
+    .option label { display: flex; align-items: center; gap: 4px; font-size: 0.85rem; font-weight: 700; white-space: nowrap; cursor: pointer; }
+    .option input[type="checkbox"] { width: 20px; height: 20px; accent-color: #fff; }
+    .add-row { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+    .hint { font-size: 0.85rem; margin-top: 6px; }
+
+    dialog { border: 0; border-radius: var(--radius); padding: 24px; width: min(640px, calc(100% - 32px)); }
+    dialog::backdrop { background: rgba(0, 0, 0, 0.5); }
+    dialog textarea { min-height: 260px; font-family: ui-monospace, Menlo, monospace; font-size: 0.9rem; }
+    dialog pre { background: #f3f1f8; padding: 10px; border-radius: 8px; font-size: 0.85rem; overflow-x: auto; }
+    .dialog-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; }
+
+    @media (max-width: 640px) {
+      .options, .q-meta { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>ClassQuiz</h1>
+    <span>Oʻqituvchi paneli</span>
+  </header>
+
+  <main>
+    <!-- Quiz list -->
+    <section id="list-view">
+      <div class="editor-top">
+        <h2>Testlaringiz</h2>
+        <button class="btn" id="new-quiz">+ Yangi test</button>
+      </div>
+      <div class="quiz-list" id="quiz-list"></div>
+    </section>
+
+    <!-- Quiz editor -->
+    <section id="editor-view" class="hidden">
+      <div class="editor-top">
+        <button class="btn ghost" id="cancel-edit">← Orqaga</button>
+        <div style="display:flex; gap:8px;">
+          <button class="btn ghost" id="open-import">Savollarni joylash</button>
+          <button class="btn" id="save-quiz">Testni saqlash</button>
+        </div>
+      </div>
+      <div class="card">
+        <input type="text" class="title-input" id="quiz-title" placeholder="Test nomi, masalan: 3-bobni takrorlash" maxlength="120">
+      </div>
+      <div id="questions"></div>
+      <div class="add-row">
+        <button class="btn light" id="add-mc">+ Koʻp tanlovli</button>
+        <button class="btn light" id="add-tf">+ Toʻgʻri / Notoʻgʻri</button>
+      </div>
+    </section>
+  </main>
+
+  <dialog id="import-dialog">
+    <h2>Savollarni joylash</h2>
+    <p class="muted">Har bir savolni alohida qatorga, undan keyin javoblarini yozing. Toʻgʻri javoblarni <b>*</b> bilan, notoʻgʻrilarini <b>-</b> bilan boshlang. Savollar orasida boʻsh qator qoldiring.</p>
+    <pre>Fransiyaning poytaxti qaysi?
+- London
+* Parij
+- Rim
+
+Quyosh – yulduz.
+* Toʻgʻri
+- Notoʻgʻri</pre>
+    <textarea id="import-text" placeholder="Savollaringizni shu yerga joylang…"></textarea>
+    <div class="dialog-actions">
+      <button class="btn ghost" id="import-cancel">Bekor qilish</button>
+      <button class="btn" id="import-go">Savollarni qoʻshish</button>
+    </div>
+  </dialog>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/common.js"></script>
+  <script>
+    const $ = (id) => document.getElementById(id);
+    const TIMES = [5, 10, 20, 30, 45, 60, 90, 120];
+    let editing = null; // { id, title, questions } while the editor is open
+
+    // ---------------- Quiz list ----------------
+
+    async function api(method, url, body) {
+      const res = await fetch(url, {
+        method,
+        headers: body ? { 'Content-Type': 'application/json' } : {},
+        body: body ? JSON.stringify(body) : undefined,
+      });
+      if (res.status === 401) {
+        location.href = '/login';
+        throw new Error('Parol kerak.');
+      }
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Xatolik yuz berdi.');
+      return data;
+    }
+
+    async function showList() {
+      editing = null;
+      $('editor-view').classList.add('hidden');
+      $('list-view').classList.remove('hidden');
+      const quizzes = await api('GET', '/api/quizzes');
+      $('quiz-list').innerHTML = quizzes.length
+        ? quizzes.map((q) => `
+          <div class="card quiz-row">
+            <div>
+              <h3>${esc(q.title)}</h3>
+              <span class="muted">${q.count} ta savol</span>
+            </div>
+            <div class="actions">
+              <button class="btn" data-action="play" data-id="${q.id}">▶ Oʻyinni boshlash</button>
+              <button class="btn ghost" data-action="edit" data-id="${q.id}">Tahrirlash</button>
+              <button class="btn ghost" data-action="copy" data-id="${q.id}">Nusxalash</button>
+              <button class="btn ghost" data-action="delete" data-id="${q.id}">Oʻchirish</button>
+            </div>
+          </div>`).join('')
+        : `<div class="card empty"><h3>Hali testlar yoʻq</h3><p class="muted">Boshlash uchun birinchi testingizni yarating.</p></div>`;
+    }
+
+    $('quiz-list').addEventListener('click', async (e) => {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const { action, id } = btn.dataset;
+      try {
+        if (action === 'play') location.href = `/host?quiz=${encodeURIComponent(id)}`;
+        if (action === 'edit') openEditor(await api('GET', `/api/quizzes/${id}`));
+        if (action === 'copy') {
+          const quiz = await api('GET', `/api/quizzes/${id}`);
+          await api('POST', '/api/quizzes', { ...quiz, title: `${quiz.title} (nusxa)` });
+          showList();
+        }
+        if (action === 'delete') {
+          const title = btn.closest('.quiz-row').querySelector('h3').textContent;
+          if (confirm(`"${title}" oʻchirilsinmi? Buni qaytarib boʻlmaydi.`)) {
+            await api('DELETE', `/api/quizzes/${id}`);
+            showList();
+          }
+        }
+      } catch (err) {
+        toast(err.message);
+      }
+    });
+
+    // ---------------- Editor ----------------
+
+    const blankQuestion = () => ({
+      text: '', time: 20, image: '',
+      options: [0, 1, 2, 3].map((i) => ({ text: '', correct: i === 0 })),
+    });
+    const trueFalseQuestion = () => ({
+      text: '', time: 10, image: '',
+      options: [{ text: 'Toʻgʻri', correct: true }, { text: 'Notoʻgʻri', correct: false },
+        { text: '', correct: false }, { text: '', correct: false }],
+    });
+
+    function openEditor(quiz) {
+      editing = structuredClone(quiz || { title: '', questions: [blankQuestion()] });
+      // Always show four answer slots; empty ones are dropped when saving.
+      for (const q of editing.questions) {
+        while (q.options.length < 4) q.options.push({ text: '', correct: false });
+      }
+      $('list-view').classList.add('hidden');
+      $('editor-view').classList.remove('hidden');
+      $('quiz-title').value = editing.title;
+      renderQuestions();
+      window.scrollTo(0, 0);
+    }
+
+    function renderQuestions() {
+      const n = editing.questions.length;
+      $('questions').innerHTML = editing.questions.map((q, qi) => `
+        <div class="card question" data-q="${qi}">
+          <div class="q-head">
+            <strong>${qi + 1}-savol</strong>
+            <div class="q-tools">
+              <button class="btn ghost small" data-tool="up" ${qi === 0 ? 'disabled' : ''} title="Yuqoriga">↑</button>
+              <button class="btn ghost small" data-tool="down" ${qi === n - 1 ? 'disabled' : ''} title="Pastga">↓</button>
+              <button class="btn ghost small" data-tool="dup">Nusxalash</button>
+              <button class="btn ghost small" data-tool="del">Oʻchirish</button>
+            </div>
+          </div>
+          <textarea rows="2" data-field="text" placeholder="Savolingizni yozing…" maxlength="500">${esc(q.text)}</textarea>
+          <div class="q-meta">
+            <input type="url" data-field="image" placeholder="Rasm havolasi (ixtiyoriy), masalan: https://…/rasm.jpg" value="${esc(q.image)}">
+            <select data-field="time" title="Vaqt chegarasi">
+              ${TIMES.map((t) => `<option value="${t}" ${t === q.time ? 'selected' : ''}>${t} soniya</option>`).join('')}
+            </select>
+          </div>
+          <div class="options">
+            ${q.options.map((o, oi) => `
+              <div class="option opt-${oi}">
+                <span class="shape">${SHAPES[oi]}</span>
+                <input type="text" data-opt="${oi}" placeholder="${oi + 1}-javob${oi >= 2 ? ' (ixtiyoriy)' : ''}" value="${esc(o.text)}" maxlength="150">
+                <label><input type="checkbox" data-correct="${oi}" ${o.correct ? 'checked' : ''}> Toʻgʻri</label>
+              </div>`).join('')}
+          </div>
+        </div>`).join('');
+    }
+
+    $('quiz-title').addEventListener('input', (e) => { editing.title = e.target.value; });
+
+    $('questions').addEventListener('input', (e) => {
+      const card = e.target.closest('[data-q]');
+      if (!card) return;
+      const q = editing.questions[card.dataset.q];
+      const t = e.target;
+      if (t.dataset.field === 'time') q.time = Number(t.value);
+      else if (t.dataset.field) q[t.dataset.field] = t.value;
+      else if (t.dataset.opt !== undefined) q.options[t.dataset.opt].text = t.value;
+      else if (t.dataset.correct !== undefined) q.options[t.dataset.correct].correct = t.checked;
+    });
+
+    $('questions').addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-tool]');
+      if (!btn) return;
+      const qi = Number(btn.closest('[data-q]').dataset.q);
+      const qs = editing.questions;
+      if (btn.dataset.tool === 'up') [qs[qi - 1], qs[qi]] = [qs[qi], qs[qi - 1]];
+      if (btn.dataset.tool === 'down') [qs[qi + 1], qs[qi]] = [qs[qi], qs[qi + 1]];
+      if (btn.dataset.tool === 'dup') qs.splice(qi + 1, 0, structuredClone(qs[qi]));
+      if (btn.dataset.tool === 'del') qs.splice(qi, 1);
+      renderQuestions();
+    });
+
+    function addQuestion(q) {
+      editing.questions.push(q);
+      renderQuestions();
+      const cards = document.querySelectorAll('.question');
+      cards[cards.length - 1].scrollIntoView({ behavior: 'smooth', block: 'center' });
+      cards[cards.length - 1].querySelector('textarea').focus();
+    }
+
+    $('add-mc').onclick = () => addQuestion(blankQuestion());
+    $('add-tf').onclick = () => addQuestion(trueFalseQuestion());
+    $('new-quiz').onclick = () => openEditor(null);
+    $('cancel-edit').onclick = () => {
+      if (confirm('Muharrirdan chiqasizmi? Saqlanmagan oʻzgarishlar yoʻqoladi.')) showList();
+    };
+
+    $('save-quiz').onclick = async () => {
+      try {
+        if (editing.id) await api('PUT', `/api/quizzes/${editing.id}`, editing);
+        else editing.id = (await api('POST', '/api/quizzes', editing)).id;
+        toast('Test saqlandi ✓');
+        showList();
+      } catch (err) {
+        toast(err.message, 4000);
+      }
+    };
+
+    // ---------------- Savollarni joylash ----------------
+
+    function parseQuestions(text) {
+      return text.split(/\n\s*\n/).map((block) => {
+        const lines = block.split('\n').map((l) => l.trim()).filter(Boolean);
+        if (!lines.length) return null;
+        const question = { text: '', time: 20, image: '', options: [] };
+        const textLines = [];
+        for (const line of lines) {
+          const m = line.match(/^([*\-+])\s*(.+)$/);
+          if (m && question.options.length < 4) question.options.push({ text: m[2], correct: m[1] === '*' });
+          else if (!question.options.length) textLines.push(line);
+        }
+        question.text = textLines.join(' ');
+        return question.text && question.options.length >= 2 ? question : null;
+      }).filter(Boolean);
+    }
+
+    $('open-import').onclick = () => { $('import-text').value = ''; $('import-dialog').showModal(); };
+    $('import-cancel').onclick = () => $('import-dialog').close();
+    $('import-go').onclick = () => {
+      const parsed = parseQuestions($('import-text').value);
+      if (!parsed.length) return toast('Savollar topilmadi. Yuqoridagi namunani tekshiring.');
+      // Replace the starting blank question if it was never filled in.
+      const qs = editing.questions;
+      if (qs.length === 1 && !qs[0].text.trim() && qs[0].options.every((o) => !o.text.trim())) qs.length = 0;
+      for (const q of parsed) {
+        while (q.options.length < 4) q.options.push({ text: '', correct: false });
+      }
+      qs.push(...parsed);
+      renderQuestions();
+      $('import-dialog').close();
+      toast(`${parsed.length} ta savol qoʻshildi`);
+    };
+
+    showList().catch((err) => toast(err.message));
+  </script>
+</body>
+</html>

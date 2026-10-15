@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="uz">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
+  <meta name="theme-color" content="#46178f">
+  <title>ClassQuiz – Qoʻshilish</title>
+  <link rel="stylesheet" href="/style.css">
+  <style>
+    html, body { height: 100%; }
+    body { color: #fff; display: flex; flex-direction: column; transition: background 0.3s; }
+    body.good { background: var(--good); }
+    body.bad { background: var(--bad); }
+    .bar {
+      display: flex; justify-content: space-between; align-items: center; gap: 10px;
+      padding: 10px 16px; background: rgba(0, 0, 0, 0.2); font-weight: 700;
+    }
+    .bar .score { background: rgba(0, 0, 0, 0.35); padding: 4px 12px; border-radius: 6px; }
+    #screen { flex: 1; display: flex; flex-direction: column; padding: 16px; gap: 14px; }
+    .middle { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; gap: 12px; }
+    .middle h1 { margin: 0; font-size: 2rem; }
+    .middle p { margin: 0; font-size: 1.15rem; opacity: 0.9; }
+
+    .join { width: 100%; max-width: 360px; display: grid; gap: 12px; }
+    .join h1 { margin: 0 0 10px; font-size: 2.4rem; text-align: center; }
+    .join input { text-align: center; font-size: 1.4rem; font-weight: 700; padding: 14px; color: var(--ink); }
+    .join .btn { font-size: 1.3rem; padding: 14px; background: var(--ink); }
+    .error { background: rgba(0, 0, 0, 0.35); padding: 10px 14px; border-radius: 8px; text-align: center; }
+
+    .q-head { display: flex; align-items: flex-start; gap: 12px; }
+    .q-text { flex: 1; background: #fff; color: var(--ink); border-radius: 10px; padding: 14px 16px; font-size: 1.2rem; font-weight: 700; }
+    .q-img { max-width: 100%; max-height: 22vh; border-radius: 8px; align-self: center; background: #fff; }
+    .timer {
+      flex: none; width: 54px; height: 54px; border-radius: 50%; background: var(--bg-dark);
+      display: grid; place-items: center; font-size: 1.4rem; font-weight: 900;
+    }
+    .choices { flex: 1; display: grid; grid-template-columns: 1fr 1fr; gap: 10px; min-height: 260px; }
+    .choices.two { grid-template-columns: 1fr; }
+    .choice {
+      border: 0; border-radius: 10px; color: #fff; padding: 12px; font-size: 1.15rem; font-weight: 800;
+      display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 6px;
+      box-shadow: 0 5px 0 rgba(0, 0, 0, 0.3); word-break: break-word;
+    }
+    .choice .shape { font-size: 2.2rem; width: auto; }
+    .choice:active { transform: translateY(3px); box-shadow: 0 2px 0 rgba(0, 0, 0, 0.3); }
+
+    .big-icon { font-size: 5rem; line-height: 1; }
+    .points { background: rgba(0, 0, 0, 0.3); border-radius: 8px; padding: 10px 20px; font-size: 1.6rem; font-weight: 900; }
+    .ready-count {
+      width: 120px; height: 120px; border-radius: 50%; background: #fff; color: var(--accent);
+      display: grid; place-items: center; font-size: 4rem; font-weight: 900;
+    }
+    .spinner {
+      width: 48px; height: 48px; border: 5px solid rgba(255, 255, 255, 0.3); border-top-color: #fff;
+      border-radius: 50%; animation: spin 0.9s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+  </style>
+</head>
+<body>
+  <div class="bar hidden" id="bar">
+    <span id="bar-name"></span>
+    <span class="score" id="bar-score">0</span>
+  </div>
+  <div id="screen"></div>
+
+  <script src="/socket.io/socket.io.js"></script>
+  <script src="/common.js"></script>
+  <script>
+    const socket = io();
+    const screen = document.getElementById('screen');
+    const STORE_KEY = 'classquiz-player';
+    const urlPin = new URLSearchParams(location.search).get('pin') || '';
+    let state = null;
+    let joined = false;
+    let cleanups = [];
+
+    const readSession = () => { try { return JSON.parse(localStorage.getItem(STORE_KEY)); } catch { return null; } };
+    const saveSession = (s) => localStorage.setItem(STORE_KEY, JSON.stringify(s));
+    const clearSession = () => localStorage.removeItem(STORE_KEY);
+
+    function resetTimers() {
+      cleanups.forEach((fn) => fn());
+      cleanups = [];
+    }
+
+    function setMood(mood) {
+      document.body.className = mood || '';
+    }
+
+    function message(icon, title, text = '') {
+      return `<div class="middle">${icon}<h1>${title}</h1>${text ? `<p>${text}</p>` : ''}</div>`;
+    }
+
+    // ---------------- Joining ----------------
+
+    function showJoin(error = '', pin = urlPin) {
+      resetTimers();
+      joined = false;
+      setMood();
+      document.getElementById('bar').classList.add('hidden');
+      screen.innerHTML = `
+        <div class="middle">
+          <form class="join" id="join-form" autocomplete="off">
+            <h1>ClassQuiz</h1>
+            ${error ? `<div class="error">${esc(error)}</div>` : ''}
+            <input id="pin" type="text" inputmode="numeric" pattern="[0-9]*" maxlength="6" placeholder="Oʻyin PIN kodi" value="${esc(pin)}">
+            <input id="name" type="text" maxlength="20" placeholder="Ismingiz" autocapitalize="words">
+            <button class="btn" type="submit">Qoʻshilish</button>
+          </form>
+        </div>`;
+      document.getElementById(pin ? 'name' : 'pin').focus();
+      document.getElementById('join-form').onsubmit = (e) => {
+        e.preventDefault();
+        const pinValue = document.getElementById('pin').value.trim();
+        const name = document.getElementById('name').value.trim();
+        if (!/^\d{6}$/.test(pinValue)) return showJoin('PIN kod 6 ta raqamdan iborat.', pinValue);
+        if (!name) return showJoin('Ismingizni kiriting.', pinValue);
+        join({ pin: pinValue, name });
+      };
+    }
+
+    function join(payload) {
+      screen.innerHTML = message('<div class="spinner"></div>', 'Qoʻshilmoqda…');
+      socket.emit('player:join', payload, (res) => {
+        if (res.error) {
+          clearSession();
+          return showJoin(res.error, payload.pin);
+        }
+        joined = true;
+        saveSession({ pin: payload.pin, playerId: res.playerId });
+      });
+    }
+
+    // Rejoin automatically after a refresh or a dropped connection.
+    const resumable = () => {
+      const saved = readSession();
+      return saved && (!urlPin || urlPin === saved.pin) ? saved : null;
+    };
+
+    socket.on('connect', () => {
+      const saved = resumable();
+      if (saved) join(saved);
+    });
+
+    if (!resumable()) showJoin();
+
+    socket.on('disconnect', () => {
+      if (joined) {
+        resetTimers();
+        screen.innerHTML = message('<div class="spinner"></div>', 'Qayta ulanmoqda…', 'Wi-Fi aloqangizni tekshiring.');
+      }
+    });
+
+    socket.on('player:kicked', () => {
+      clearSession();
+      showJoin('Oʻqituvchi sizni oʻyindan chiqardi.');
+    });
+
+    socket.on('game:ended', () => {
+      clearSession();
+      joined = false;
+      resetTimers();
+      setMood();
+      document.getElementById('bar').classList.add('hidden');
+      screen.innerHTML = message('<div class="big-icon">👋</div>', 'Oʻyin tugadi', 'Qatnashganingiz uchun rahmat!');
+    });
+
+    socket.on('player:state', (s) => { state = s; render(); });
+
+    // ---------------- Game screens ----------------
+
+    function render() {
+      resetTimers();
+      const s = state;
+      document.getElementById('bar').classList.remove('hidden');
+      document.getElementById('bar-name').textContent = s.name;
+      document.getElementById('bar-score').textContent = s.score;
+      setMood();
+
+      if (s.phase === 'lobby') {
+        screen.innerHTML = message('<div class="big-icon">✅</div>', 'Siz oʻyindasiz!', 'Ismingizni ekrandan qidiring. Oʻyin tez orada boshlanadi.');
+      } else if (s.phase === 'question') {
+        renderQuestion();
+      } else if (s.phase === 'reveal') {
+        renderResult();
+      } else if (s.phase === 'leaderboard') {
+        screen.innerHTML = message('<div class="big-icon">📊</div>', `Siz ${s.rank}-oʻrindasiz`, `${s.score} ball · Keyingi savolga tayyorlaning!`);
+      } else if (s.phase === 'final') {
+        const icon = s.rank === 1 ? '🏆' : s.rank <= 3 ? '🥇🥈🥉'.slice((s.rank - 1) * 2, s.rank * 2) : '🎉';
+        screen.innerHTML = message(`<div class="big-icon">${icon}</div>`, `Siz ${s.rank}-oʻrinni egalladingiz!`, `${s.score} ball · ${s.playerCount} ta oʻyinchi`);
+        clearSession();
+      }
+    }
+
+    function renderQuestion() {
+      const s = state;
+      const q = s.question;
+      if (s.readyMs > 0) {
+        screen.innerHTML = message('<div class="ready-count" id="ready"></div>', `Savol ${s.qIndex + 1} / ${s.total}`, 'Tayyorlaning…');
+        cleanups.push(countdown(s.readyMs, (n) => {
+          const el = document.getElementById('ready');
+          if (el) el.textContent = Math.max(1, n);
+        }));
+        const t = setTimeout(() => { state = { ...s, readyMs: 0 }; render(); }, s.readyMs);
+        cleanups.push(() => clearTimeout(t));
+        return;
+      }
+      if (s.answered !== null) {
+        screen.innerHTML = message(
+          `<div class="choice opt-${s.answered}" style="width:110px;height:110px"><span class="shape">${SHAPES[s.answered]}</span></div>`,
+          'Javob qabul qilindi!', 'Boshqalar kutilmoqda…');
+        return;
+      }
+      screen.innerHTML = `
+        <div class="q-head">
+          <div class="q-text">${esc(q.text)}</div>
+          <div class="timer" id="timer"></div>
+        </div>
+        ${q.image ? `<img class="q-img" src="${esc(q.image)}" alt="">` : ''}
+        <div class="choices ${q.options.length === 2 ? 'two' : ''}">
+          ${q.options.map((text, i) => `
+            <button class="choice opt-${i}" data-choice="${i}">
+              <span class="shape">${SHAPES[i]}</span>${esc(text)}
+            </button>`).join('')}
+        </div>`;
+      cleanups.push(countdown(s.remainingMs, (n) => {
+        const el = document.getElementById('timer');
+        if (el) el.textContent = n;
+        if (n === 0) screen.querySelectorAll('.choice').forEach((b) => { b.disabled = true; b.style.opacity = 0.5; });
+      }));
+    }
+
+    screen.addEventListener('click', (e) => {
+      const btn = e.target.closest('[data-choice]');
+      if (!btn || btn.disabled || !state || state.phase !== 'question') return;
+      const choice = Number(btn.dataset.choice);
+      socket.emit('player:answer', { choice });
+      navigator.vibrate?.(30);
+      state = { ...state, answered: choice };
+      render();
+    });
+
+    function renderResult() {
+      const s = state;
+      const r = s.result;
+      const answers = esc(r.correctAnswers.join(' / '));
+      const place = `Siz ${s.rank}-oʻrindasiz`;
+      if (r.correct) {
+        setMood('good');
+        const streak = r.streak >= 2 ? `<p>🔥 Ketma-ket ${r.streak} ta!</p>` : '';
+        screen.innerHTML = `<div class="middle">
+          <div class="big-icon">✔</div>
+          <h1>Toʻgʻri!</h1>
+          <div class="points">+${r.points}</div>
+          ${streak}
+          <p>${place}</p>
+        </div>`;
+      } else {
+        setMood('bad');
+        screen.innerHTML = `<div class="middle">
+          <div class="big-icon">${r.answered ? '✖' : '⏰'}</div>
+          <h1>${r.answered ? 'Notoʻgʻri' : 'Vaqt tugadi'}</h1>
+          <p>Toʻgʻri javob: <b>${answers}</b></p>
+          <p>${place}</p>
+        </div>`;
+      }
+    }
+  </script>
+</body>
+</html>

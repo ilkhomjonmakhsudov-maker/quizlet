@@ -1,0 +1,18 @@
+{
+  "name": "classquiz",
+  "version": "1.0.0",
+  "description": "Live classroom quiz game — students join by QR code or PIN",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.22.3",
+    "qrcode": "^1.5.4",
+    "socket.io": "^4.8.4"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

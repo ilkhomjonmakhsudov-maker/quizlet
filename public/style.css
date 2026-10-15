@@ -1,0 +1,96 @@
+:root {
+  --bg: #46178f;
+  --bg-dark: #2b0d5c;
+  --panel: #ffffff;
+  --ink: #1d1d2b;
+  --muted: #6b6b80;
+  --line: #e3e1ea;
+  --accent: #46178f;
+  --red: #e21b3c;
+  --blue: #1368ce;
+  --yellow: #d89e00;
+  --green: #26890c;
+  --good: #26890c;
+  --bad: #e21b3c;
+  --radius: 10px;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; min-height: 100%; }
+
+body {
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  color: var(--ink);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+
+button { cursor: pointer; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  border: 0;
+  border-radius: 8px;
+  padding: 10px 18px;
+  font-weight: 700;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.25);
+  transition: transform 0.05s, box-shadow 0.05s;
+  text-decoration: none;
+}
+.btn:active { transform: translateY(3px); box-shadow: 0 1px 0 rgba(0, 0, 0, 0.25); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn.light { background: #fff; color: var(--ink); }
+.btn.ghost { background: transparent; color: var(--ink); box-shadow: none; border: 1px solid var(--line); }
+.btn.danger { background: var(--bad); }
+.btn.big { font-size: 1.25rem; padding: 14px 28px; }
+.btn.small { padding: 6px 12px; font-size: 0.9rem; box-shadow: 0 2px 0 rgba(0, 0, 0, 0.2); }
+
+.card {
+  background: var(--panel);
+  border-radius: var(--radius);
+  padding: 20px;
+  box-shadow: 0 4px 0 rgba(0, 0, 0, 0.15);
+}
+
+.muted { color: var(--muted); }
+.hidden { display: none !important; }
+.center { text-align: center; }
+
+input[type="text"], input[type="url"], input[type="number"], select, textarea {
+  width: 100%;
+  border: 2px solid var(--line);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: #fff;
+  outline: none;
+}
+input:focus, select:focus, textarea:focus { border-color: var(--accent); }
+
+/* Answer colors and shapes */
+.opt-0 { background: var(--red); }
+.opt-1 { background: var(--blue); }
+.opt-2 { background: var(--yellow); }
+.opt-3 { background: var(--green); }
+
+.shape { display: inline-block; width: 1.4em; text-align: center; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 24px;
+  transform: translateX(-50%);
+  background: var(--ink);
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  z-index: 100;
+  max-width: calc(100% - 32px);
+}
