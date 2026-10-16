@@ -1,7 +1,7 @@
 [
   {
     "id": "mediasavodxonlik-1",
-    "title": "Mediasavodxonlik va axborot madaniyati (1–50-betlar)",
+    "title": "Mediasavodxonlik va axborot madaniyati",
     "questions": [
       {
         "text": "\"Media\" soʻzi lotin tilidan olingan boʻlib, qanday maʼnoni anglatadi?",
@@ -15,25 +15,14 @@
         ]
       },
       {
-        "text": "\"Axborot savodxonligi\" (Information literacy) iborasini 1974-yilda birinchi boʻlib kim qoʻllagan?",
+        "text": "Birinchi bo'lib \"Axborot savodxonligi\" tushunchasi qayerda va nechinchi yilda kiritilgan?",
         "time": 20,
         "image": "",
         "options": [
-          { "text": "Norbert Viner", "correct": false },
-          { "text": "Elvin Toffler", "correct": false },
-          { "text": "Pol Zurkovskiy", "correct": true },
-          { "text": "Klod Shennon", "correct": false }
-        ]
-      },
-      {
-        "text": "Kibernetika fanining asoschisi kim?",
-        "time": 20,
-        "image": "",
-        "options": [
-          { "text": "Norbert Viner", "correct": true },
-          { "text": "Alan Tyuring", "correct": false },
-          { "text": "R. Xartli", "correct": false },
-          { "text": "A. P. Ershov", "correct": false }
+          { "text": "1988-yil Buyuk Britaniyada", "correct": false },
+          { "text": "1977-yil Yaponiyada", "correct": false },
+          { "text": "1977-yil AQSHda", "correct": true },
+          { "text": "1988-yil Fransiyada", "correct": false }
         ]
       },
       {
@@ -48,95 +37,80 @@
         ]
       },
       {
-        "text": "M. Behbudiy \"Samarqand\" gazetasini qaysi yili chiqara boshlagan?",
+        "text": "Media savodxonlik Finlandiyada qaysi yildan boshlab oliy o'quv yurtlarining o'quv dasturiga kiritilgan?",
         "time": 20,
         "image": "",
         "options": [
-          { "text": "1905-yil", "correct": false },
-          { "text": "1913-yil", "correct": true },
-          { "text": "1924-yil", "correct": false },
-          { "text": "1932-yil", "correct": false }
+          { "text": "1965-yilda", "correct": false },
+          { "text": "1970-yilda", "correct": false },
+          { "text": "1977-yilda", "correct": true },
+          { "text": "1990-yilda", "correct": false }
         ]
       },
       {
-        "text": "\"Axborot olish kafolatlari va erkinligi toʻgʻrisida\"gi Qonun qachon qabul qilingan?",
-        "time": 30,
-        "image": "",
-        "options": [
-          { "text": "1991-yil 31-avgust", "correct": false },
-          { "text": "1997-yil 24-aprel", "correct": true },
-          { "text": "2003-yil 11-dekabr", "correct": false },
-          { "text": "2019-yil 8-oktabr", "correct": false }
-        ]
-      },
-      {
-        "text": "Mediataʼlim boʻyicha Gryunvald deklaratsiyasi qaysi yili qabul qilingan?",
+        "text": "Media konsepsiyasini ishlab chiqish asoschilari kimlar?",
         "time": 20,
         "image": "",
         "options": [
-          { "text": "1974-yil", "correct": false },
-          { "text": "1982-yil", "correct": true },
-          { "text": "2005-yil", "correct": false },
-          { "text": "2007-yil", "correct": false }
+          { "text": "Garald Innes va Marshal Maklyuhan", "correct": true },
+          { "text": "N.A Mikovlovsky va Gabriel Garsia", "correct": false },
+          { "text": "Marshal Maklyuhan va Gabriel Garsia", "correct": false },
+          { "text": "G G. Vorobyov va A.P.Ershov", "correct": false }
         ]
       },
       {
-        "text": "Ensiklopediyalar, bibliografiyalar va maʼlumotnomalar qaysi turdagi axborot manbalariga kiradi?",
+        "text": "Medialar evolyutsiyasining ikkinchi bosqichi (XVI asr o'rtalari) nima bilan bog'liq?",
         "time": 20,
         "image": "",
         "options": [
-          { "text": "Birlamchi manbalar", "correct": false },
-          { "text": "Ikkilamchi manbalar", "correct": false },
-          { "text": "Uchlamchi manbalar", "correct": true },
-          { "text": "Noanʼanaviy manbalar", "correct": false }
+          { "text": "Yozuvning kashf etilishi", "correct": false },
+          { "text": "Kitob bosishning ixtiro qilinishi", "correct": true },
+          { "text": "Telegraf va telefonning paydo bo'lishi", "correct": false },
+          { "text": "Personal kompyuterlarning paydo bo'lishi", "correct": false }
         ]
       },
       {
-        "text": "\"Uchinchi toʻlqin\" asarining muallifi kim?",
+        "text": "Medialar evolyutsiyasining uchinchi bosqichi (XIX asr oxiri – XX asr boshlari) nima bilan bog'liq?",
         "time": 20,
         "image": "",
         "options": [
-          { "text": "E. Toffler", "correct": true },
-          { "text": "Y. Ocheret", "correct": false },
-          { "text": "A. Umarov", "correct": false },
-          { "text": "Mia Dornert", "correct": false }
+          { "text": "Yozuvning kashf etilishi", "correct": false },
+          { "text": "Kitob bosishning ixtiro qilinishi", "correct": false },
+          { "text": "Elektr aloqa vositalari: telegraf, telefon, radio va televideniyening paydo bo'lishi", "correct": true },
+          { "text": "Personal kompyuterlarning paydo bo'lishi", "correct": false }
         ]
       },
       {
-        "text": "Amerikalik nazariyotchilar ommaviy axborot vositalarini tavsiflovchi nechta nazariyani ajratib koʻrsatishadi?",
+        "text": "Hind fotojurnalisti Pabak Sarkarning fikriga ko'ra, mediasavodxonlik sari tashlangan ilk qadam nima?",
         "time": 20,
         "image": "",
         "options": [
-          { "text": "Ikkita", "correct": false },
-          { "text": "Uchta", "correct": false },
-          { "text": "Toʻrtta", "correct": true },
-          { "text": "Beshta", "correct": false }
-        ]
-      }
-    ]
-  },
-  {
-    "id": "sample",
-    "title": "Namuna test: Umumiy bilim",
-    "questions": [
-      {
-        "text": "Quyosh sistemasidagi eng katta sayyora qaysi?",
-        "time": 20,
-        "image": "",
-        "options": [
-          { "text": "Yer", "correct": false },
-          { "text": "Yupiter", "correct": true },
-          { "text": "Saturn", "correct": false },
-          { "text": "Mars", "correct": false }
+          { "text": "To'g'ri savol bera olish", "correct": true },
+          { "text": "Ko'p gazeta o'qish", "correct": false },
+          { "text": "Internetdan foydalana olish", "correct": false },
+          { "text": "Media matn yarata olish", "correct": false }
         ]
       },
       {
-        "text": "Dengiz sathida suv 100 °C da qaynaydi.",
-        "time": 10,
+        "text": "\"Axborot madaniyati – bu insonning axborot mavjudligiga erkin kirishiga imkon beradigan yangi aloqa turi\" ta'rifi kimga tegishli?",
+        "time": 20,
         "image": "",
         "options": [
-          { "text": "Toʻgʻri", "correct": true },
-          { "text": "Notoʻgʻri", "correct": false }
+          { "text": "Norbert Viner", "correct": false },
+          { "text": "Mikhailovskiy V.N.", "correct": true },
+          { "text": "Fedorov A.V.", "correct": false },
+          { "text": "Marshall Maklyuhan", "correct": false }
+        ]
+      },
+      {
+        "text": "Medialar evolyutsiyasining to'rtinchi bosqichi (XX asrning 70-yillari) nima bilan bog'liq?",
+        "time": 20,
+        "image": "",
+        "options": [
+          { "text": "Radio va televideniyening paydo bo'lishi", "correct": false },
+          { "text": "Kitob bosishning ixtiro qilinishi", "correct": false },
+          { "text": "Mikroprotsessorli texnika va personal kompyuterlarning paydo bo'lishi", "correct": true },
+          { "text": "Ijtimoiy tarmoqlarning paydo bo'lishi", "correct": false }
         ]
       }
     ]
